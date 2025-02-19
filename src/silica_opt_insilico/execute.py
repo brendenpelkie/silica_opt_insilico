@@ -16,7 +16,8 @@ import pickle
 def process_sample(uuid_val, sample, target_I, q_grid, amplitude_weight, noise_level):
     """ Runs the experiment for a single sample and returns the results. """
     sample_point = [sample['teos_vol_frac'], sample['ammonia_vol_frac'], sample['water_vol_frac']]
-    scattering, real_sample_point, diameter, pdi = experiment.run_experiment(sample_point, noise_level)
+    q_grid_nonlog = 10**q_grid
+    scattering, real_sample_point, diameter, pdi = experiment.run_experiment(sample_point, noise_level, q_grid_nonlog, experiment.sld_silica, experiment.sld_etoh )
     
     # Process measurement
     ap_dist, ap_dist_report, I_scaled = data_processing.process_measurement(scattering, target_I, q_grid, amplitude_weight)

@@ -7,7 +7,8 @@ import numpy as np
 from silica_opt_insilico import objectives
 from saxs_data_processing import io, manipulate, target_comparison, subtract, sasview_fitting
 
-
+sld_silica = 8.575
+sld_etoh = 9.611
 
 def syringe_precision(vol_frac, noise_frac):
     """
