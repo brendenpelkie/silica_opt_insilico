@@ -42,13 +42,13 @@ def batch_experiment(batch, target_I, q_grid, amplitude_weight, noise_level, n_j
     for uuid_val, result in results:
         batch[uuid_val].update(result)
 
-def run_grouped_trials(target_I, q_grid, batch_size, amplitude_weight, m_samples, lower_bounds, upper_bounds, trial_name, noise_level, n_replicates = 3, sobol_seed = 42, NUM_RESTARTS = 50, RAW_SAMPLES = 512, nu = 5/2, ard_num_dims = 3):
+def run_grouped_trials(target_I, q_grid, batch_size, amplitude_weight, m_samples, lower_bounds, upper_bounds, trial_name, noise_level, budget, n_replicates = 3, sobol_seed = 42, NUM_RESTARTS = 50, RAW_SAMPLES = 512, nu = 5/2, ard_num_dims = 3):
     """Run a batch of replicates of a trial"""
     
     if batch_size == 0:
         n_batches = 0
     else:
-        n_batches = int(np.ceil(100/batch_size))
+        n_batches = int(np.ceil(budget/batch_size))
     
     bounds_torch_norm = torch.tensor([(lower_bounds[0], upper_bounds[0]), (lower_bounds[1], upper_bounds[1]), (lower_bounds[2], upper_bounds[2])]).transpose(-1, -2)
     bounds_torch_opt = torch.tensor([[0, 0, 0], [1.0, 1.0, 1.0]], dtype = torch.float32)
