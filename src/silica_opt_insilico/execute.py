@@ -19,7 +19,7 @@ def process_sample(uuid_val, sample, target_I, q_grid, amplitude_weight, noise_l
     q_grid_nonlog = 10**q_grid
     scattering, real_sample_point, diameter, pdi = experiment.run_experiment(sample_point, noise_level, q_grid_nonlog, experiment.sld_silica, experiment.sld_etoh )
     
-    print('process sample distance metric: ', distance_metric)
+    #print('process sample distance metric: ', distance_metric)
     # Process measurement
     dist, ap_dist_report, I_scaled = data_processing.process_measurement(scattering, target_I, q_grid, amplitude_weight, distance_metric = distance_metric)
 

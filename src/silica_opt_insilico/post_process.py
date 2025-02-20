@@ -11,7 +11,7 @@ import pd_utils
 def composition_distance(measured_point, true_optima):
     return np.sqrt(np.sum([(measured_point[i] - true_optima[i])**2 for i in range(len(measured_point))]))
 
-def process_distances(trial_name, params, true_min_composition, budget = 100, convergence_threshold = 0.05, fp = './', n_replicates = 3):
+def process_distances(trial_name, params, true_min_composition, dist_name = 'ap_distance_reporting', budget = 100, convergence_threshold = 0.05, fp = './', n_replicates = 3):
     """
     First pass through data
     """
@@ -51,7 +51,7 @@ def process_distances(trial_name, params, true_min_composition, budget = 100, co
         
         for i, (uuid_val, sample) in enumerate(data.items()):
             data_complete[uuid_val] = sample
-            dist = sample['ap_distance_reporting']
+            dist = sample[dist_name]
             if len(best_distances_ap) == 0:
                 best_distances_ap.append(dist)
                 best_distances_ap.append(dist)
