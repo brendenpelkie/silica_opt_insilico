@@ -106,7 +106,7 @@ def convergence_plot(data_complete, best_distances_list, best_uuids_list, name_b
     return fig
 
 
-def best_scatterer_plots(data_complete, best_uuids_list, q_grid_nonlog, target_I, trial_name):
+def best_scatterer_plots(data_complete, best_uuids_list, q_grid_nonlog, target_I, trial_name, true_min):
 
     fig, ax = plt.subplots(1,len(best_uuids_list), figsize = (12,12/len(best_uuids_list)))
 
@@ -117,15 +117,23 @@ def best_scatterer_plots(data_complete, best_uuids_list, q_grid_nonlog, target_I
     for i, best_uuid in enumerate(best_uuids_list):
 
         I = data_complete[best_uuid[-1]]['I_scaled']
-    
+        ap_dist = data_complete[best_uuid[-1]]['ap_distance_reporting']
+        sample = data_complete[best_uuid[-1]]
+        point = [sample['teos_vol_frac'], sample['ammonia_vol_frac'], sample['water_vol_frac']]
+        comp_dist = composition_distance(point, true_min)
+
         ax[i].loglog(q_grid_nonlog, I)
         ax[i].loglog(q_grid_nonlog, target_I, ls ='--')
+        ax[i].text(0.05, 0.1, f'AP dist {ap_dist:.3f}\nComposition dist: {comp_dist:.3f}', transform=ax[i].transAxes)
 
-    fig.suptitle(trial_name)
+    fig.suptitle(f'Best samples - {trial_name}')
 
-def converge_scatterer_plots(data_complete, converge_uuid, q_grid_nonlog, target_I, trial_name):
+def converge_scatterer_plots(data_complete, converge_uuid, q_grid_nonlog, target_I, trial_name, true_min):
 
-    fig, ax = plt.subplots(1,len(converge_uuid), figsize = (12,12/len(converge_uuid)))
+    if len(converge_uuid) == 0:
+        return None
+    else:
+        fig, ax = plt.subplots(1,len(converge_uuid), figsize = (12,12/len(converge_uuid)))
 
     # handle 1 replicate case
     if not isinstance(ax, np.ndarray):
@@ -134,14 +142,19 @@ def converge_scatterer_plots(data_complete, converge_uuid, q_grid_nonlog, target
     for i, uuid_val in enumerate(converge_uuid):
 
         I = data_complete[uuid_val]['I_scaled']
-    
+        ap_dist = data_complete[uuid_val]['ap_distance_reporting']
+
+        sample = data_complete[uuid_val]
+        point = [sample['teos_vol_frac'], sample['ammonia_vol_frac'], sample['water_vol_frac']]
+        comp_dist = composition_distance(point, true_min)
+
         ax[i].loglog(q_grid_nonlog, I)
         ax[i].loglog(q_grid_nonlog, target_I, ls ='--')
+        ax[i].text(0.05, 0.1, f'AP dist {ap_dist:.3f}\nComp distance: {comp_dist:.3f}', transform=ax[i].transAxes)
+    fig.suptitle(f'Converged samples - {trial_name}')
 
-    fig.suptitle(trial_name)
 
-
-def phase_diagram(data, lower_bounds, upper_bounds, q_grid):
+def phase_diagram(data, lower_bounds, upper_bounds, q_grid, plot_title):
     """
     Phase plot, for 1 campaign
     """
@@ -215,7 +228,7 @@ def phase_diagram(data, lower_bounds, upper_bounds, q_grid):
     cbar2.set_label(y_key)
 
 
-    fig.suptitle('Round 2 Optimization Batch 3 - APdist')
+    fig.suptitle(plot_title)
     #plt.savefig('Phaseplot_apdist_batch3_80nm.png', dpi = 300)
     return fig
 

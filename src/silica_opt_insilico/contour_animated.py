@@ -104,7 +104,7 @@ class ContourAnimation:
                 batch = []
 
             i += 1
-        print(batches_points)
+    
         return batches_points
 
     def get_best_points(self):

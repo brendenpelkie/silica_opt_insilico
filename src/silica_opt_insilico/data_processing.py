@@ -27,7 +27,7 @@ def process_measurement(scattering, target_I, q_grid, amplitude_weight, distance
     amplitude, phase = target_comparison.ap_distance(q_grid, I_scaled, target_I, optim = optim, grid_dim = grid_dim)
 
     if distance_metric == 'rmse':
-        distance = target_comparison.rmse_distance(I_scaled, target_I)
+        distance = target_comparison.rmse_distance(I_scaled, target_I, log = False) # alsready in log10 space
     elif distance_metric == 'apdist':
         distance = ap_sum = amplitude_weight*amplitude + (1-amplitude_weight)*phase
     else:
