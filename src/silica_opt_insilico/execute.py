@@ -13,36 +13,38 @@ from joblib import Parallel, delayed
 import torch
 import pickle
 
-def process_sample(uuid_val, sample, target_I, q_grid, amplitude_weight, noise_level):
+def process_sample(uuid_val, sample, target_I, q_grid, amplitude_weight, noise_level, characterization = 'SAXS', pdi_weight = 0.5):
     """ Runs the experiment for a single sample and returns the results. """
     sample_point = [sample['teos_vol_frac'], sample['ammonia_vol_frac'], sample['water_vol_frac']]
     q_grid_nonlog = 10**q_grid
     scattering, real_sample_point, diameter, pdi = experiment.run_experiment(sample_point, noise_level, q_grid_nonlog, experiment.sld_silica, experiment.sld_etoh )
     
     # Process measurement
-    ap_dist, ap_dist_report, I_scaled = data_processing.process_measurement(scattering, target_I, q_grid, amplitude_weight)
+    dist, ap_dist_report, I_scaled = data_processing.process_measurement(scattering, target_I, q_grid, amplitude_weight)
 
+    if characterization == 'DLS':
+        dist = data_processing.process_measurement_DLS(diameter, pdi, pdi_weight) 
     return uuid_val, {
         'scattering_I': scattering,
         'real_sampled_point': real_sample_point,
         'diameter': diameter,
         'pdi': pdi,
-        'ap_distance': ap_dist,
+        'distance': dist,
         'ap_distance_reporting': ap_dist_report,
         'I_scaled': I_scaled
     }
 
-def batch_experiment(batch, target_I, q_grid, amplitude_weight, noise_level, n_jobs=-1):
+def batch_experiment(batch, target_I, q_grid, amplitude_weight, noise_level, characterization, pdi_weight, n_jobs=-1):
     """ Runs experiments in parallel using joblib. """
     results = Parallel(n_jobs=n_jobs)(
-        delayed(process_sample)(uuid_val, sample, target_I, q_grid, amplitude_weight, noise_level) for uuid_val, sample in batch.items()
+        delayed(process_sample)(uuid_val, sample, target_I, q_grid, amplitude_weight, noise_level, characterization, pdi_weight) for uuid_val, sample in batch.items()
     )
 
     # Update batch with results
     for uuid_val, result in results:
         batch[uuid_val].update(result)
 
-def run_grouped_trials(target_I, q_grid, batch_size, amplitude_weight, m_samples, lower_bounds, upper_bounds, trial_name, noise_level, budget, n_replicates = 3, sobol_seed = 42, NUM_RESTARTS = 50, RAW_SAMPLES = 512, nu = 5/2, ard_num_dims = 3):
+def run_grouped_trials(target_I, q_grid, batch_size, amplitude_weight, m_samples, lower_bounds, upper_bounds, trial_name, noise_level, budget, characterization = 'SAXS', pdi_weight = 0.5, n_replicates = 3, sobol_seed = 42, NUM_RESTARTS = 50, RAW_SAMPLES = 512, nu = 5/2, ard_num_dims = 3):
     """Run a batch of replicates of a trial"""
     
     if batch_size == 0:
@@ -62,7 +64,7 @@ def run_grouped_trials(target_I, q_grid, batch_size, amplitude_weight, m_samples
         
         # 2. 'measure' sobol samples
         
-        batch_experiment(initial_samples, target_I, q_grid, amplitude_weight, noise_level)
+        batch_experiment(initial_samples, target_I, q_grid, amplitude_weight, noise_level, characterization, pdi_weight)
         
         # 3. start experiment loop:
         data = initial_samples
@@ -74,7 +76,7 @@ def run_grouped_trials(target_I, q_grid, batch_size, amplitude_weight, m_samples
             candidates = bo.bo_postprocess(candidates)
         
             # run experiment
-            batch_experiment(candidates, target_I, q_grid, amplitude_weight, noise_level)
+            batch_experiment(candidates, target_I, q_grid, amplitude_weight, noise_level, characterization, pdi_weight)
         
             # update running data tally
             for uuid_val, sample in candidates.items():

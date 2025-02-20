@@ -2,7 +2,7 @@ from saxs_data_processing import io, manipulate, target_comparison, subtract, sa
 import numpy as np
 
 
-def process_measurement(scattering, target_I, q_grid, amplitude_weight, n_avg = 100, optim = "DP", grid_dim = 10):
+def process_measurement(scattering, target_I, q_grid, amplitude_weight, distance_metric = 'apdist', n_avg = 100, optim = "DP", grid_dim = 10):
     """
     Do scaling and amplitdue_phase calculation on scattering
 
@@ -26,7 +26,20 @@ def process_measurement(scattering, target_I, q_grid, amplitude_weight, n_avg = 
     I_scaled = manipulate.scale_intensity_highqavg(scattering, target_I, n_avg = n_avg)
     amplitude, phase = target_comparison.ap_distance(q_grid, I_scaled, target_I, optim = optim, grid_dim = grid_dim)
 
-    ap_sum = amplitude_weight*amplitude + (1-amplitude_weight)*phase
+    if distance_metric == 'RMSE':
+        distance = target_comparison.rmse_distance(I_scaled, target_I)
+    elif distance == 'apdist':
+        distance = ap_sum = amplitude_weight*amplitude + (1-amplitude_weight)*phase
+    else:
+        raise AssertionError('invalid distance name')
+    
     ap_sum_report = 0.1 * amplitude + 0.9*phase
 
-    return ap_sum, ap_sum_report, I_scaled
+    return distance, ap_sum_report, I_scaled
+
+def process_measurement_DLS(diameter, PDI, pdi_weight):
+    """
+    """
+    
+    distance = PDI*pdi_weight + diameter*(1-pdi_weight)
+    return distance
