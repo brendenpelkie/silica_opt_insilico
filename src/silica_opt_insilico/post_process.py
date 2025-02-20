@@ -11,7 +11,7 @@ import pd_utils
 def composition_distance(measured_point, true_optima):
     return np.sqrt(np.sum([(measured_point[i] - true_optima[i])**2 for i in range(len(measured_point))]))
 
-def process_distances(trial_name, params, true_min_composition, budget = 100, convergence_threshold = 0.05, fp = './'):
+def process_distances(trial_name, params, true_min_composition, budget = 100, convergence_threshold = 0.05, fp = './', n_replicates = 3):
     """
     First pass through data
     """
@@ -35,7 +35,7 @@ def process_distances(trial_name, params, true_min_composition, budget = 100, co
     best_uuids_list = []
     converge_iterations = []
     best_composition_dist = []
-    for i in range(3):
+    for i in range(n_replicates):
         with open(f'{fp}{trial_name}_replicate_{i}.pkl', 'rb') as f:
             data = pickle.load(f)
         
@@ -63,7 +63,7 @@ def process_distances(trial_name, params, true_min_composition, budget = 100, co
                 #print('new min found')
                 best_uuid.append(uuid_val)
 
-            if dist < convergence_threshold:
+            if dist < convergence_threshold and converge_its is None:
                 converge_its = i
                 converge_iterations.append(i)
         if converge_its is None:
@@ -107,6 +107,10 @@ def convergence_plot(data_complete, best_distances_list, best_uuids_list, name_b
 def best_scatterer_plots(data_complete, best_uuids_list, q_grid_nonlog, target_I, trial_name):
 
     fig, ax = plt.subplots(1,len(best_uuids_list), figsize = (12,12/len(best_uuids_list)))
+
+    # handle 1 replicate case
+    if not isinstance(ax, np.ndarray):
+        ax = np.array(ax).reshape(-1)
 
     for i, best_uuid in enumerate(best_uuids_list):
 

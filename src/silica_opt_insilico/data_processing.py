@@ -26,12 +26,12 @@ def process_measurement(scattering, target_I, q_grid, amplitude_weight, distance
     I_scaled = manipulate.scale_intensity_highqavg(scattering, target_I, n_avg = n_avg)
     amplitude, phase = target_comparison.ap_distance(q_grid, I_scaled, target_I, optim = optim, grid_dim = grid_dim)
 
-    if distance_metric == 'RMSE':
+    if distance_metric == 'rmse':
         distance = target_comparison.rmse_distance(I_scaled, target_I)
     elif distance_metric == 'apdist':
         distance = ap_sum = amplitude_weight*amplitude + (1-amplitude_weight)*phase
     else:
-        raise AssertionError('invalid distance name')
+        raise AssertionError(f'invalid distance name {distance_metric}')
     
     ap_sum_report = 0.1 * amplitude + 0.9*phase
 

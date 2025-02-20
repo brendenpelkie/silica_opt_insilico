@@ -104,7 +104,7 @@ class ContourAnimation:
                 batch = []
 
             i += 1
-
+        print(batches_points)
         return batches_points
 
     def get_best_points(self):
@@ -125,10 +125,10 @@ class ContourAnimation:
         """Determines alpha transparency for previous points."""
         if frame - i >= 5:
             return 0.1
-        if frame - i - 1 == 0:
+        if frame - i  == 0:
             return 1
         else:
-            return 0.2 * (frame - i)
+            return 1 - 0.2 * (frame - i)
 
     def update(self, frame):
         """Update function for animation."""
@@ -142,10 +142,11 @@ class ContourAnimation:
         
         # Add new points for each batch
         for i in range(frame + 1):
-            self.text.set_text('Batch ' + self.batch_names[i])
-            alpha = self.get_alpha(i, frame)
             current_batch = self.batches_points[i]
-            color = 'red' if frame - i - 1 == 0 else 'k'
+            self.text.set_text('i: '+str(i)+'Batch ' + self.batch_names[i]+ 'frame '+str(frame)+str(len(current_batch)))
+            alpha = self.get_alpha(i, frame)
+            #current_batch = self.batches_points[i]
+            color = 'red' if frame - i  == 0 else 'k'
 
             for point in current_batch:
                 sc1 = self.ax[0].scatter(point[0], point[2], color=color, alpha=alpha)
