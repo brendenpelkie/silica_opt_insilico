@@ -35,6 +35,7 @@ def process_distances(trial_name, params, true_min_composition, budget = 100, co
     best_uuids_list = []
     converge_iterations = []
     best_composition_dist = []
+    converge_uuid = []
     for i in range(n_replicates):
         with open(f'{fp}{trial_name}_replicate_{i}.pkl', 'rb') as f:
             data = pickle.load(f)
@@ -66,6 +67,7 @@ def process_distances(trial_name, params, true_min_composition, budget = 100, co
             if dist < convergence_threshold and converge_its is None:
                 converge_its = i
                 converge_iterations.append(i)
+                converge_uuid.append(uuid_val)
         if converge_its is None:
             converge_iterations.append('Not converged')
             
@@ -79,7 +81,7 @@ def process_distances(trial_name, params, true_min_composition, budget = 100, co
         comp_dist = composition_distance(best_sample_comp, true_min_composition)
         best_composition_dist.append(comp_dist)
 
-    return data_complete, data_campaigns, best_distances_list, best_uuids_list, converge_iterations, best_composition_dist, name_bounds
+    return data_complete, data_campaigns, best_distances_list, best_uuids_list, converge_iterations, converge_uuid, best_composition_dist, name_bounds
     
 
 def convergence_plot(data_complete, best_distances_list, best_uuids_list, name_bounds, trial_name):
@@ -115,6 +117,23 @@ def best_scatterer_plots(data_complete, best_uuids_list, q_grid_nonlog, target_I
     for i, best_uuid in enumerate(best_uuids_list):
 
         I = data_complete[best_uuid[-1]]['I_scaled']
+    
+        ax[i].loglog(q_grid_nonlog, I)
+        ax[i].loglog(q_grid_nonlog, target_I, ls ='--')
+
+    fig.suptitle(trial_name)
+
+def converge_scatterer_plots(data_complete, converge_uuid, q_grid_nonlog, target_I, trial_name):
+
+    fig, ax = plt.subplots(1,len(converge_uuid), figsize = (12,12/len(converge_uuid)))
+
+    # handle 1 replicate case
+    if not isinstance(ax, np.ndarray):
+        ax = np.array(ax).reshape(-1)
+
+    for i, uuid_val in enumerate(converge_uuid):
+
+        I = data_complete[uuid_val]['I_scaled']
     
         ax[i].loglog(q_grid_nonlog, I)
         ax[i].loglog(q_grid_nonlog, target_I, ls ='--')
