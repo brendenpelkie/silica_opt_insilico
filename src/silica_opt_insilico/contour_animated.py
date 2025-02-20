@@ -8,7 +8,7 @@ from silica_opt_insilico import experiment, data_processing
 class ContourAnimation:
     def __init__(self, ammonia_range, water_range, teos_range, 
                  Z_ammonia, Z_water, data, best_uuid, n_batches, 
-                 true_min, trial_name, n_grid, m_samples):
+                 true_min, trial_name, n_grid, m_samples, batch_size):
         """
         Initializes the animated contour plot.
 
@@ -36,7 +36,7 @@ class ContourAnimation:
         self.m_samples = m_samples
         self.best_uuid = best_uuid
         self.n_sobol = 2**m_samples
-
+        self.batch_size = batch_size
 
 
         batch_nums = [str(i+1) for i in range(self.n_batches)]
@@ -113,7 +113,7 @@ class ContourAnimation:
         for i, (uuid_val, data_val) in enumerate(self.data.items()):
             if uuid_val in self.best_uuid:
                 # get batch num:
-                batch_num = self.get_batch_num(i, self.n_sobol, self.batch_size)
+                batch_num = self.get_batch_num(i)
                 point = [data_val['teos_vol_frac'], data_val['ammonia_vol_frac'], data_val['water_vol_frac']]
                 best_points[batch_num] = point    
 

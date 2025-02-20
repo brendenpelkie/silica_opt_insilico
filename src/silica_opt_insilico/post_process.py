@@ -82,12 +82,12 @@ def process_distances(trial_name, params, true_min_composition, budget = 100, co
     return data_complete, data_campaigns, best_distances_list, best_uuids_list, converge_iterations, best_composition_dist, name_bounds
     
 
-def convergence_plot(data_complete, best_distances_list, best_uuids_list, name_bounds, trial_name, q_grid_nonlog, target_I):
+def convergence_plot(data_complete, best_distances_list, best_uuids_list, name_bounds, trial_name):
                          
     fig, ax = plt.subplots()
 
     for name, bounds in name_bounds.items():
-        ax.fill_between(bounds, 0, max(best_distances_ap), alpha = 0.2)
+        ax.fill_between(bounds, 0, max([max(dists) for dists in best_distances_list]), alpha = 0.2)
     #    ax.text(np.mean(bounds), 0.1, name, rotation = 'vertical')
 
     for best_distances_ap in best_distances_list:
