@@ -99,7 +99,7 @@ def bo_preprocess(current_dataset, bounds_torch_norm):
     for uiud_val, sample in current_dataset.items():
         comp = [sample['teos_vol_frac'], sample['ammonia_vol_frac'], sample['water_vol_frac']]
         compositions.append(comp)
-        apdist_vals.append(sample['ap_distance'])
+        apdist_vals.append(sample['distance'])
 
     y_data = - torch.tensor(np.array(apdist_vals)).reshape(-1,1)
     x_data_torch = torch.tensor(np.array(compositions))
