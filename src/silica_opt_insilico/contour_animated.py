@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from IPython.display import HTML
+from silica_opt_insilico import experiment, data_processing
 
 
 class ContourAnimation:
@@ -183,3 +184,22 @@ class ContourAnimation:
             raise ValueError("Unsupported format. Use 'mp4', 'gif', or 'html'.")
 
         print(f"Animation saved as {filename}")
+
+def contour_eval(teos, ammonia, water, target_I, q_grid, return_scatter = False, amplitude_weight = 0.1):
+
+    #teos = sample[0]
+    #ammonia = sample[1]
+    #water = sample[2]
+
+    noise_level = 0
+    sample_point = (teos, ammonia, water)
+
+    scattering, real_sample_point, diameter, pdi = experiment.run_experiment(sample_point, noise_level, 10**q_grid, experiment.sld_silica, experiment.sld_etoh)
+
+    # Process measurement
+    ap_dist, ap_dist_report, I_scaled = data_processing.process_measurement(scattering, target_I, q_grid, amplitude_weight)
+
+    if return_scatter:
+        return ap_dist, scattering
+    else:
+        return ap_dist

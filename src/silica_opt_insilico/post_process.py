@@ -30,6 +30,7 @@ def process_distances(trial_name, params, true_min_composition, budget = 100, co
         n_batches = int(np.ceil(budget/batch_size))
 
     data_complete = {}
+    data_campaigns = []
     best_distances_list = []
     best_uuids_list = []
     converge_iterations = []
@@ -70,6 +71,7 @@ def process_distances(trial_name, params, true_min_composition, budget = 100, co
             
         best_distances_list.append(best_distances_ap)
         best_uuids_list.append(best_uuid)
+        data_campaigns.append(data)
 
         # get best composition distance
         best_sample = data[best_uuid[-1]]
@@ -77,7 +79,7 @@ def process_distances(trial_name, params, true_min_composition, budget = 100, co
         comp_dist = composition_distance(best_sample_comp, true_min_composition)
         best_composition_dist.append(comp_dist)
 
-    return data_complete, best_distances_list, best_uuids_list, converge_iterations, best_composition_dist, name_bounds
+    return data_complete, data_campaigns, best_distances_list, best_uuids_list, converge_iterations, best_composition_dist, name_bounds
     
 
 def convergence_plot(data_complete, best_distances_list, best_uuids_list, name_bounds, trial_name, q_grid_nonlog, target_I):
@@ -211,26 +213,8 @@ def get_colormap_color(value, vmin, vmax, cmap_name='viridis'):
     cmap = cm.get_cmap(cmap_name)
     return cmap(norm(value))[:3] 
 
+    
 
 
+    
 
-### Animated contour plot
-
-def contour_eval(teos, ammonia, water, target_I, q_grid, return_scatter = False, amplitude_weight = 0.1):
-
-    #teos = sample[0]
-    #ammonia = sample[1]
-    #water = sample[2]
-
-    noise_level = 0
-    sample_point = (teos, ammonia, water)
-
-    scattering, real_sample_point, diameter, pdi = experiment.run_experiment(sample_point, noise_level, 10**q_grid, experiment.sld_silica, experiment.sld_etoh)
-
-    # Process measurement
-    ap_dist, ap_dist_report, I_scaled = data_processing.process_measurement(scattering, target_I, q_grid, amplitude_weight)
-
-    if return_scatter:
-        return ap_dist, scattering
-    else:
-        return ap_dist
