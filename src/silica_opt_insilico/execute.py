@@ -13,7 +13,7 @@ from joblib import Parallel, delayed
 import torch
 import pickle
 
-def process_sample(uuid_val, sample, target_I, q_grid, amplitude_weight, noise_level, characterization = 'SAXS', distance_metric = 'apdist', pdi_weight = 0.5):
+def process_sample(uuid_val, sample, target_I, q_grid, amplitude_weight, noise_level, characterization = 'SAXS', distance_metric = 'apdist', pdi_weight = 0.5, target_d = None, target_pdi = None):
     """ Runs the experiment for a single sample and returns the results. """
     sample_point = [sample['teos_vol_frac'], sample['ammonia_vol_frac'], sample['water_vol_frac']]
     q_grid_nonlog = 10**q_grid
@@ -24,7 +24,7 @@ def process_sample(uuid_val, sample, target_I, q_grid, amplitude_weight, noise_l
     dist, ap_dist_report, I_scaled = data_processing.process_measurement(scattering, target_I, q_grid, amplitude_weight, distance_metric = distance_metric)
 
     if characterization == 'DLS':
-        dist = data_processing.process_measurement_DLS(diameter, pdi, pdi_weight) 
+        dist = data_processing.process_measurement_DLS(diameter, pdi, pdi_weight, target_d, target_pdi) 
     return uuid_val, {
         'scattering_I': scattering,
         'real_sampled_point': real_sample_point,
@@ -35,18 +35,18 @@ def process_sample(uuid_val, sample, target_I, q_grid, amplitude_weight, noise_l
         'I_scaled': I_scaled
     }
 
-def batch_experiment(batch, target_I, q_grid, amplitude_weight, noise_level, characterization, pdi_weight, distance_metric, n_jobs=-1):
+def batch_experiment(batch, target_I, q_grid, amplitude_weight, noise_level, characterization, pdi_weight, distance_metric, target_d, target_pdi, n_jobs=-1):
     """ Runs experiments in parallel using joblib. """
     print('batch distance metric: ', distance_metric)
     results = Parallel(n_jobs=n_jobs)(
-        delayed(process_sample)(uuid_val, sample, target_I, q_grid, amplitude_weight, noise_level, characterization, distance_metric, pdi_weight) for uuid_val, sample in batch.items()
+        delayed(process_sample)(uuid_val, sample, target_I, q_grid, amplitude_weight, noise_level, characterization, distance_metric, pdi_weight, target_d, target_pdi) for uuid_val, sample in batch.items()
     )
 
     # Update batch with results
     for uuid_val, result in results:
         batch[uuid_val].update(result)
 
-def run_grouped_trials(target_I, q_grid, batch_size, amplitude_weight, m_samples, lower_bounds, upper_bounds, trial_name, noise_level, budget, characterization = 'SAXS', distance_metric = 'apdist', pdi_weight = 0.5, n_replicates = 3, sobol_seed = 42, NUM_RESTARTS = 50, RAW_SAMPLES = 512, nu = 5/2, ard_num_dims = 3):
+def run_grouped_trials(target_I, q_grid, batch_size, amplitude_weight, m_samples, lower_bounds, upper_bounds, trial_name, noise_level, budget, target_d, target_pdi characterization = 'SAXS', distance_metric = 'apdist', pdi_weight = 0.5, n_replicates = 3, sobol_seed = 42, NUM_RESTARTS = 50, RAW_SAMPLES = 512, nu = 5/2, ard_num_dims = 3):
     """Run a batch of replicates of a trial"""
     
     if batch_size == 0:
@@ -66,7 +66,7 @@ def run_grouped_trials(target_I, q_grid, batch_size, amplitude_weight, m_samples
         
         # 2. 'measure' sobol samples
         
-        batch_experiment(initial_samples, target_I, q_grid, amplitude_weight, noise_level, characterization, pdi_weight, distance_metric)
+        batch_experiment(initial_samples, target_I, q_grid, amplitude_weight, noise_level, characterization, pdi_weight, distance_metric, target_d, target_pdi)
         
         # 3. start experiment loop:
         data = initial_samples
@@ -78,7 +78,7 @@ def run_grouped_trials(target_I, q_grid, batch_size, amplitude_weight, m_samples
             candidates = bo.bo_postprocess(candidates)
         
             # run experiment
-            batch_experiment(candidates, target_I, q_grid, amplitude_weight, noise_level, characterization, pdi_weight, distance_metric)
+            batch_experiment(candidates, target_I, q_grid, amplitude_weight, noise_level, characterization, pdi_weight, distance_metric, target_d, target_pdi)
         
             # update running data tally
             for uuid_val, sample in candidates.items():
