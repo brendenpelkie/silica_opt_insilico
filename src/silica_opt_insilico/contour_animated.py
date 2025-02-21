@@ -143,7 +143,7 @@ class ContourAnimation:
         # Add new points for each batch
         for i in range(frame + 1):
             current_batch = self.batches_points[i]
-            self.text.set_text('i: '+str(i)+'Batch ' + self.batch_names[i]+ 'frame '+str(frame)+str(len(current_batch)))
+            self.text.set_text('Batch ' + self.batch_names[i])
             alpha = self.get_alpha(i, frame)
             #current_batch = self.batches_points[i]
             color = 'red' if frame - i  == 0 else 'k'

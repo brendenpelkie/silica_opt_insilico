@@ -84,7 +84,7 @@ def process_distances(trial_name, params, true_min_composition, dist_name = 'ap_
     return data_complete, data_campaigns, best_distances_list, best_uuids_list, converge_iterations, converge_uuid, best_composition_dist, name_bounds
     
 
-def convergence_plot(data_complete, best_distances_list, best_uuids_list, name_bounds, trial_name):
+def convergence_plot(data_complete, best_distances_list, best_uuids_list, name_bounds, trial_name, ylabel = 'ampplitude-phase distance'):
                          
     fig, ax = plt.subplots()
 
@@ -97,7 +97,7 @@ def convergence_plot(data_complete, best_distances_list, best_uuids_list, name_b
     
     
     ax.set_xlabel('Sample number')
-    ax.set_ylabel('amplitude-phase distance')
+    ax.set_ylabel(ylabel)
     ax.set_title(trial_name)
     
     plt.tight_layout()
@@ -106,7 +106,7 @@ def convergence_plot(data_complete, best_distances_list, best_uuids_list, name_b
     return fig
 
 
-def best_scatterer_plots(data_complete, best_uuids_list, q_grid_nonlog, target_I, trial_name, true_min):
+def best_scatterer_plots(data_complete, best_uuids_list, q_grid_nonlog, target_I, trial_name, true_min, distance = 'ap_distance_reporting'):
 
     fig, ax = plt.subplots(1,len(best_uuids_list), figsize = (12,12/len(best_uuids_list)))
 
@@ -117,18 +117,18 @@ def best_scatterer_plots(data_complete, best_uuids_list, q_grid_nonlog, target_I
     for i, best_uuid in enumerate(best_uuids_list):
 
         I = data_complete[best_uuid[-1]]['I_scaled']
-        ap_dist = data_complete[best_uuid[-1]]['ap_distance_reporting']
+        ap_dist = data_complete[best_uuid[-1]][distance]
         sample = data_complete[best_uuid[-1]]
         point = [sample['teos_vol_frac'], sample['ammonia_vol_frac'], sample['water_vol_frac']]
         comp_dist = composition_distance(point, true_min)
 
         ax[i].loglog(q_grid_nonlog, I)
         ax[i].loglog(q_grid_nonlog, target_I, ls ='--')
-        ax[i].text(0.05, 0.1, f'AP dist {ap_dist:.3f}\nComposition dist: {comp_dist:.3f}', transform=ax[i].transAxes)
+        ax[i].text(0.05, 0.1, f'{distance} {ap_dist:.3f}\nComposition dist: {comp_dist:.3f}', transform=ax[i].transAxes)
 
     fig.suptitle(f'Best samples - {trial_name}')
 
-def converge_scatterer_plots(data_complete, converge_uuid, q_grid_nonlog, target_I, trial_name, true_min):
+def converge_scatterer_plots(data_complete, converge_uuid, q_grid_nonlog, target_I, trial_name, true_min, distance = 'ap_distance_reporting'):
 
     if len(converge_uuid) == 0:
         return None
@@ -142,7 +142,7 @@ def converge_scatterer_plots(data_complete, converge_uuid, q_grid_nonlog, target
     for i, uuid_val in enumerate(converge_uuid):
 
         I = data_complete[uuid_val]['I_scaled']
-        ap_dist = data_complete[uuid_val]['ap_distance_reporting']
+        ap_dist = data_complete[uuid_val][distance]
 
         sample = data_complete[uuid_val]
         point = [sample['teos_vol_frac'], sample['ammonia_vol_frac'], sample['water_vol_frac']]
@@ -150,7 +150,7 @@ def converge_scatterer_plots(data_complete, converge_uuid, q_grid_nonlog, target
 
         ax[i].loglog(q_grid_nonlog, I)
         ax[i].loglog(q_grid_nonlog, target_I, ls ='--')
-        ax[i].text(0.05, 0.1, f'AP dist {ap_dist:.3f}\nComp distance: {comp_dist:.3f}', transform=ax[i].transAxes)
+        ax[i].text(0.05, 0.1, f'{distance} {ap_dist:.3f}\nComp distance: {comp_dist:.3f}', transform=ax[i].transAxes)
     fig.suptitle(f'Converged samples - {trial_name}')
 
 
