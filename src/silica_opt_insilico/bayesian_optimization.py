@@ -55,7 +55,7 @@ def initialize_model(train_x, train_y, state_dict=None, nu = 5/2, ard_num_dims =
 def obj_callable(Z: torch.Tensor, X: Optional[torch.Tensor] = None):
     return Z[..., 0]
 
-def bayesian_optimize(x_train, y_train, batch_size, num_restarts, raw_samples, nu, ard_num_dims, bounds_torch_opt, bounds_torch_norm):
+def bayesian_optimize(x_train, y_train, batch_size, num_restarts, raw_samples, nu, ard_num_dims, bounds_torch_opt, bounds_torch_norm, acqf = 'qLogNEI', return_model = False):
     ## init model
     mll_nei, model_nei = initialize_model(x_train, y_train, ard_num_dims = ard_num_dims)    
     fit_mll = fit_gpytorch_mll(mll_nei)
@@ -68,27 +68,42 @@ def bayesian_optimize(x_train, y_train, batch_size, num_restarts, raw_samples, n
     objective = GenericMCObjective(objective=obj_callable)
     
     # for best_f, we use the best observed noisy values as an approximation
-    qLogNEI = qLogNoisyExpectedImprovement(
-        model=model_nei,
-        X_baseline=x_train,
-        sampler=qmc_sampler,
-        objective=objective,
-        prune_baseline=True,
-    )
+    if acqf == 'qLogNEI':
+        acqfunc = qLogNoisyExpectedImprovement(
+            model=model_nei,
+            X_baseline=x_train,
+            sampler=qmc_sampler,
+            objective=objective,
+            prune_baseline=True,
+        )
+
+    elif acqf == 'qLogEI':
+        acqfunc = qLogExpectedImprovement(
+            model = model_nei,
+            best_f = y_train.max()[0],
+            X_baseline = x_train,
+            sampler = qmc_sampler,
+            objective = objective,
+            prune_baseline = True
+        )
     
     # optimize for new candidates
     candidates, _ = optimize_acqf(
-        acq_function=qLogNEI,
+        acq_function=acqfunc,
         bounds=bounds_torch_opt,
         q=batch_size,
         num_restarts=num_restarts,
         raw_samples=raw_samples,  # used for intialization heuristic
         #options={"batch_limit": 5, "maxiter": 200},
     )
+
     print(f'Optimized acqf in {time.time() - t_acqf} s')
     x_fractions = unnormalize(candidates, bounds_torch_norm)
 
-    return x_fractions
+    if return_model:
+        return x_fractions, model_nei
+    else:
+        return x_fractions
 
 def bo_preprocess(current_dataset, bounds_torch_norm):
     """

@@ -46,7 +46,7 @@ def batch_experiment(batch, target_I, q_grid, amplitude_weight, noise_level, cha
     for uuid_val, result in results:
         batch[uuid_val].update(result)
 
-def run_grouped_trials(target_I, q_grid, batch_size, amplitude_weight, m_samples, lower_bounds, upper_bounds, trial_name, noise_level, budget, target_d, target_pdi characterization = 'SAXS', distance_metric = 'apdist', pdi_weight = 0.5, n_replicates = 3, sobol_seed = 42, NUM_RESTARTS = 50, RAW_SAMPLES = 512, nu = 5/2, ard_num_dims = 3):
+def run_grouped_trials(target_I, q_grid, batch_size, amplitude_weight, m_samples, lower_bounds, upper_bounds, trial_name, noise_level, budget, target_d, target_pdi, characterization = 'SAXS', distance_metric = 'apdist', pdi_weight = 0.5, n_replicates = 3, sobol_seed = 42, NUM_RESTARTS = 50, RAW_SAMPLES = 512, nu = 5/2, ard_num_dims = 3):
     """Run a batch of replicates of a trial"""
     
     if batch_size == 0:
