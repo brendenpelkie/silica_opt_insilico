@@ -40,8 +40,10 @@ def process_measurement(scattering, target_I, q_grid, amplitude_weight, distance
 def process_measurement_DLS(diameter, PDI, pdi_weight, target_d, target_pdi):
     """
     """
-    diam_d = np.abs(target_d - diameter)
-    pdi_d = np.abs(target_pdi - PDI)
+    diam_d = np.abs(target_d - diameter)/target_d
+    pdi_d = np.abs(target_pdi - PDI)/target_pdi
+
+
 
     distance = pdi_d*pdi_weight + diam_d*(1-pdi_weight)
     return distance
