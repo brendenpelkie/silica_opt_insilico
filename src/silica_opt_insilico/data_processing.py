@@ -28,8 +28,8 @@ def process_measurement(scattering, target_I, q_grid, amplitude_weight, distance
 
     if distance_metric == 'rmse':
         distance = target_comparison.rmse_distance(I_scaled, target_I, log = False) # alsready in log10 space
-    elif distance_metric == 'apdist':i
-        distance = ap_sum = amplitude_weight*amplitude + (1-amplitude_weight)*phase
+    elif distance_metric == 'apdist':
+        distance =  amplitude_weight*amplitude + (1-amplitude_weight)*phase
     else:
         raise AssertionError(f'invalid distance name {distance_metric}')
     
