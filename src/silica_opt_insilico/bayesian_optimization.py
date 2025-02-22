@@ -34,16 +34,28 @@ dtype = torch.double
 SMOKE_TEST = os.environ.get("SMOKE_TEST")
 
 
-def initialize_model(train_x, train_y, state_dict=None, nu = 5/2, ard_num_dims = None):
+def initialize_model(train_x, train_y, y_var_scale = None, state_dict=None, nu = 5/2, ard_num_dims = None):
     # define models for objective and constraint
     kernel = MaternKernel(nu = nu, ard_num_dims = ard_num_dims)
-    model_obj = SingleTaskGP(
-        train_x,
-        train_y,
-        #train_Yvar=assumed_noise*torch.ones_like(train_y),
-        input_transform=Normalize(d=train_x.shape[-1]),
-        covar_module=kernel
-    ).to(train_x)
+
+
+    if y_var_scale == None:
+        model_obj = SingleTaskGP(
+            train_x,
+            train_y,
+            #train_Yvar=assumed_noise*torch.ones_like(train_y),
+            input_transform=Normalize(d=train_x.shape[-1]),
+            covar_module=kernel
+        ).to(train_x)
+
+    else:
+        model_obj = SingleTaskGP(
+            train_x,
+            train_y,
+            train_Yvar=y_var_scale*torch.ones_like(train_y),
+            input_transform=Normalize(d=train_x.shape[-1]),
+            covar_module=kernel
+        ).to(train_x)
 
     # combine into a multi-output GP model
     mll = ExactMarginalLogLikelihood(model_obj.likelihood, model_obj)
@@ -55,9 +67,9 @@ def initialize_model(train_x, train_y, state_dict=None, nu = 5/2, ard_num_dims =
 def obj_callable(Z: torch.Tensor, X: Optional[torch.Tensor] = None):
     return Z[..., 0]
 
-def bayesian_optimize(x_train, y_train, batch_size, num_restarts, raw_samples, nu, ard_num_dims, bounds_torch_opt, bounds_torch_norm, acqf = 'qLogNEI', return_model = False):
+def bayesian_optimize(x_train, y_train, batch_size, num_restarts, raw_samples, nu, ard_num_dims, bounds_torch_opt, bounds_torch_norm, acqf = 'qLogNEI', return_model = False, y_var_scale = None):
     ## init model
-    mll_nei, model_nei = initialize_model(x_train, y_train, ard_num_dims = ard_num_dims)    
+    mll_nei, model_nei = initialize_model(x_train, y_train, y_var_scale, ard_num_dims = ard_num_dims)    
     fit_mll = fit_gpytorch_mll(mll_nei)
 
     ## run acq opt
@@ -101,7 +113,7 @@ def bayesian_optimize(x_train, y_train, batch_size, num_restarts, raw_samples, n
     x_fractions = unnormalize(candidates, bounds_torch_norm)
 
     if return_model:
-        return x_fractions, model_nei
+        return x_fractions, model_nei, x_train, y_train, acqfunc
     else:
         return x_fractions
 
