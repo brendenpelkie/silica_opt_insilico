@@ -8,7 +8,7 @@ from silica_opt_insilico import experiment, data_processing
 class ContourAnimation:
     def __init__(self, ammonia_range, water_range, teos_range, 
                  Z_ammonia, Z_water, data, best_uuid, n_batches, 
-                 true_min, trial_name, n_grid, m_samples, batch_size):
+                 true_min, trial_name, n_grid, m_samples, batch_size, cbar_label = 'APdist'):
         """
         Initializes the animated contour plot.
 
@@ -37,6 +37,12 @@ class ContourAnimation:
         self.best_uuid = best_uuid
         self.n_sobol = 2**m_samples
         self.batch_size = batch_size
+        self.cbar_label = cbar_label
+
+        if isinstance(Z_ammonia, list):
+            self.z_list = True
+        else:
+            self.z_list = False
 
 
         batch_nums = [str(i+1) for i in range(self.n_batches)]
@@ -53,15 +59,15 @@ class ContourAnimation:
         self.fig, self.ax = plt.subplots(1, 2, figsize=(13, 6))
 
         # Plot Contour 1: TEOS vs. Water
-        contour1 = self.ax[0].contourf(self.teos_range, self.water_range, Z_ammonia, levels=20, cmap='viridis')
-        self.fig.colorbar(contour1, ax=self.ax[0], label='AP_distance')
+        self.contour1 = self.ax[0].contourf(self.teos_range, self.water_range, Z_ammonia, levels=20, cmap='viridis')
+        self.fig.colorbar(self.contour1, ax=self.ax[0], label='AP_distance')
         self.ax[0].set_xlabel('TEOS')
         self.ax[0].set_ylabel('Water')
         self.ax[0].set_title('TEOS-Water')
 
         # Plot Contour 2: TEOS vs. Ammonia
-        contour2 = self.ax[1].contourf(self.teos_range, self.ammonia_range, Z_water, levels=20, cmap='viridis')
-        self.fig.colorbar(contour2, ax=self.ax[1], label='AP_distance')
+        self.contour2 = self.ax[1].contourf(self.teos_range, self.ammonia_range, Z_water, levels=20, cmap='viridis')
+        self.fig.colorbar(self.contour2, ax=self.ax[1], label='AP_distance')
         self.ax[1].set_xlabel('TEOS')
         self.ax[1].set_ylabel('Ammonia')
         self.ax[1].set_title('TEOS-Ammonia')
@@ -142,6 +148,15 @@ class ContourAnimation:
         
         # Add new points for each batch
         for i in range(frame + 1):
+
+            if self.z_list:
+
+                self.contour1 = self.ax[0].contourf(self.teos_range, self.water_range, self.Z_ammonia[i], levels=20, cmap='viridis')
+                self.fig.colorbar(self.contour1, ax=self.ax[0], label = self.cbar_label)
+
+                self.contour2 = self.ax[1].contourf(self.teos_range, self.ammonia_range, self.Z_water[i], levels=20, cmap='viridis')
+                self.fig.colorbar(self.contour2, ax=self.ax[1], label = self.cbar_label)
+
             current_batch = self.batches_points[i]
             self.text.set_text('Batch ' + self.batch_names[i])
             alpha = self.get_alpha(i, frame)
