@@ -41,8 +41,14 @@ class ContourAnimation:
 
         if isinstance(Z_ammonia, list):
             self.z_list = True
+            Z_init_ammonia = Z_ammonia[0]
+            Z_init_water = Z_water[0]
         else:
             self.z_list = False
+            Z_init_ammonia = Z_ammonia
+            Z_init_water = Z_water
+
+
 
 
         batch_nums = [str(i+1) for i in range(self.n_batches)]
@@ -59,14 +65,14 @@ class ContourAnimation:
         self.fig, self.ax = plt.subplots(1, 2, figsize=(13, 6))
 
         # Plot Contour 1: TEOS vs. Water
-        self.contour1 = self.ax[0].contourf(self.teos_range, self.water_range, Z_ammonia, levels=20, cmap='viridis')
+        self.contour1 = self.ax[0].contourf(self.teos_range, self.water_range, Z_init_ammonia, levels=20, cmap='viridis')
         self.fig.colorbar(self.contour1, ax=self.ax[0], label='AP_distance')
         self.ax[0].set_xlabel('TEOS')
         self.ax[0].set_ylabel('Water')
         self.ax[0].set_title('TEOS-Water')
 
         # Plot Contour 2: TEOS vs. Ammonia
-        self.contour2 = self.ax[1].contourf(self.teos_range, self.ammonia_range, Z_water, levels=20, cmap='viridis')
+        self.contour2 = self.ax[1].contourf(self.teos_range, self.ammonia_range, Z_init_water, levels=20, cmap='viridis')
         self.fig.colorbar(self.contour2, ax=self.ax[1], label='AP_distance')
         self.ax[1].set_xlabel('TEOS')
         self.ax[1].set_ylabel('Ammonia')
