@@ -66,14 +66,14 @@ class ContourAnimation:
 
         # Plot Contour 1: TEOS vs. Water
         self.contour1 = self.ax[0].contourf(self.teos_range, self.water_range, Z_init_ammonia, levels=20, cmap='viridis')
-        self.fig.colorbar(self.contour1, ax=self.ax[0], label='AP_distance')
+        self.cbar1 = self.fig.colorbar(self.contour1, ax=self.ax[0], label = cbar_label)
         self.ax[0].set_xlabel('TEOS')
         self.ax[0].set_ylabel('Water')
         self.ax[0].set_title('TEOS-Water')
 
         # Plot Contour 2: TEOS vs. Ammonia
         self.contour2 = self.ax[1].contourf(self.teos_range, self.ammonia_range, Z_init_water, levels=20, cmap='viridis')
-        self.fig.colorbar(self.contour2, ax=self.ax[1], label='AP_distance')
+        self.cbar2 = self.fig.colorbar(self.contour2, ax=self.ax[1], label = cbar_label)
         self.ax[1].set_xlabel('TEOS')
         self.ax[1].set_ylabel('Ammonia')
         self.ax[1].set_title('TEOS-Ammonia')
@@ -151,23 +151,36 @@ class ContourAnimation:
                 sc.remove()
             except:
                 continue
-        
+
+        # Remove old colorbars if they exist
+        if hasattr(self, 'cbar1') and self.cbar1:
+            self.cbar1.remove()
+        if hasattr(self, 'cbar2') and self.cbar2:
+            self.cbar2.remove()
+
         # Add new points for each batch
         for i in range(frame + 1):
 
             if self.z_list:
+                # Remove old contours before adding new ones
+                if hasattr(self, 'contour1'):
+                    for c in self.contour1.collections:
+                        c.remove()
+                if hasattr(self, 'contour2'):
+                    for c in self.contour2.collections:
+                        c.remove()
 
+                # Create new contour plots
                 self.contour1 = self.ax[0].contourf(self.teos_range, self.water_range, self.Z_ammonia[i], levels=20, cmap='viridis')
-                self.fig.colorbar(self.contour1, ax=self.ax[0], label = self.cbar_label)
+                self.cbar1 = self.fig.colorbar(self.contour1, ax=self.ax[0], label=self.cbar_label)
 
                 self.contour2 = self.ax[1].contourf(self.teos_range, self.ammonia_range, self.Z_water[i], levels=20, cmap='viridis')
-                self.fig.colorbar(self.contour2, ax=self.ax[1], label = self.cbar_label)
+                self.cbar2 = self.fig.colorbar(self.contour2, ax=self.ax[1], label=self.cbar_label)
 
             current_batch = self.batches_points[i]
             self.text.set_text('Batch ' + self.batch_names[i])
             alpha = self.get_alpha(i, frame)
-            #current_batch = self.batches_points[i]
-            color = 'red' if frame - i  == 0 else 'k'
+            color = 'red' if frame - i == 0 else 'k'
 
             for point in current_batch:
                 sc1 = self.ax[0].scatter(point[0], point[2], color=color, alpha=alpha)
@@ -184,6 +197,7 @@ class ContourAnimation:
                 continue
 
         return self.scatter_plots + [self.text]
+
 
     def run(self):
         """Run the animation and display it inline in Jupyter Notebook."""
