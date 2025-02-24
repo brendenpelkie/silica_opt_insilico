@@ -152,30 +152,24 @@ class ContourAnimation:
             except:
                 continue
 
-        # Remove old colorbars if they exist
-        if hasattr(self, 'cbar1') and self.cbar1:
-            self.cbar1.remove()
-        if hasattr(self, 'cbar2') and self.cbar2:
-            self.cbar2.remove()
+        # Remove old contours before adding new ones
+        if hasattr(self, 'contour1'):
+            for c in self.contour1.collections:
+                c.remove()
+        if hasattr(self, 'contour2'):
+            for c in self.contour2.collections:
+                c.remove()
 
         # Add new points for each batch
         for i in range(frame + 1):
-
             if self.z_list:
-                # Remove old contours before adding new ones
-                if hasattr(self, 'contour1'):
-                    for c in self.contour1.collections:
-                        c.remove()
-                if hasattr(self, 'contour2'):
-                    for c in self.contour2.collections:
-                        c.remove()
-
                 # Create new contour plots
                 self.contour1 = self.ax[0].contourf(self.teos_range, self.water_range, self.Z_ammonia[i], levels=20, cmap='viridis')
-                self.cbar1 = self.fig.colorbar(self.contour1, ax=self.ax[0], label=self.cbar_label)
-
                 self.contour2 = self.ax[1].contourf(self.teos_range, self.ammonia_range, self.Z_water[i], levels=20, cmap='viridis')
-                self.cbar2 = self.fig.colorbar(self.contour2, ax=self.ax[1], label=self.cbar_label)
+
+                # Update existing colorbars instead of creating new ones
+                self.cbar1.update_normal(self.contour1)
+                self.cbar2.update_normal(self.contour2)
 
             current_batch = self.batches_points[i]
             self.text.set_text('Batch ' + self.batch_names[i])
