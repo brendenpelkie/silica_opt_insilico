@@ -161,8 +161,8 @@ class ContourAnimation:
 
         if self.z_list:
             # Get new min and max values for each frame
-            vmin1, vmax1 = np.min(self.Z_ammonia[frame]), np.max(self.Z_ammonia[frame])
-            vmin2, vmax2 = np.min(self.Z_water[frame]), np.max(self.Z_water[frame])
+            vmin1, vmax1 = np.min(self.Z_ammonia[-1]), np.max(self.Z_ammonia[-1])
+            vmin2, vmax2 = np.min(self.Z_water[-1]), np.max(self.Z_water[-1])
 
             # Create new contour plots with updated limits
             self.contour1 = self.ax[0].contourf(self.teos_range, self.water_range, self.Z_ammonia[frame], 
@@ -180,24 +180,34 @@ class ContourAnimation:
             self.cbar1 = self.fig.colorbar(self.contour1, ax=self.ax[0], label=self.cbar_label)
             self.cbar2 = self.fig.colorbar(self.contour2, ax=self.ax[1], label=self.cbar_label)
 
-        current_batch = self.batches_points[frame]
-        self.text.set_text('Batch ' + self.batch_names[frame])
-        alpha = self.get_alpha(frame, frame)
-        color = 'red' if frame == frame else 'k'
 
-        for point in current_batch:
-            sc1 = self.ax[0].scatter(point[0], point[2], color=color, alpha=alpha)
-            sc2 = self.ax[1].scatter(point[0], point[1], color=color, alpha=alpha)
-            self.scatter_plots.append(sc1)
-            self.scatter_plots.append(sc2)
+        # plot points
 
-        # Highlight best points in cyan
-        try:
-            bp = self.best_points[frame]
-            self.ax[0].scatter(bp[0], bp[2], color='cyan', marker='*', s=100)
-            self.ax[1].scatter(bp[0], bp[1], color='cyan', marker='*', s=100)
-        except:
-            pass
+        # Add new points for each batch
+        for i in range(frame + 1):
+            current_batch = self.batches_points[i]
+            self.text.set_text('Batch ' + self.batch_names[i])
+            alpha = self.get_alpha(i, frame)
+            #current_batch = self.batches_points[i]
+            color = 'red' if frame - i  == 0 else 'k'
+
+            for point in current_batch:
+                sc1 = self.ax[0].scatter(point[0], point[2], color=color, alpha=alpha)
+                sc2 = self.ax[1].scatter(point[0], point[1], color=color, alpha=alpha)
+                self.scatter_plots.append(sc1)
+                self.scatter_plots.append(sc2)
+
+            # Highlight best points in cyan
+            try:
+                bp = self.best_points[i]
+                self.ax[0].scatter(bp[0], bp[2], color='cyan', marker='*', s=100)
+                self.ax[1].scatter(bp[0], bp[1], color='cyan', marker='*', s=100)
+            except:
+                pass
+                # Highlight the true minimum
+        self.ax[0].scatter(self.true_min[0], self.true_min[2], marker='*', color='pink')
+        self.ax[1].scatter(self.true_min[0], self.true_min[1], marker='*', color='pink')
+
 
         return self.scatter_plots + [self.text]
 
