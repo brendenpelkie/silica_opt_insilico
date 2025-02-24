@@ -167,13 +167,13 @@ class ContourAnimation:
                 self.contour1 = self.ax[0].contourf(self.teos_range, self.water_range, self.Z_ammonia[i], levels=20, cmap='viridis')
                 self.contour2 = self.ax[1].contourf(self.teos_range, self.ammonia_range, self.Z_water[i], levels=20, cmap='viridis')
 
-                # Update the colorbar range dynamically
+                # Update the color limits of the contour plots
                 vmin1, vmax1 = np.min(self.Z_ammonia[i]), np.max(self.Z_ammonia[i])
                 vmin2, vmax2 = np.min(self.Z_water[i]), np.max(self.Z_water[i])
-                self.cbar1.set_clim(vmin1, vmax1)  # Update colorbar limits
-                self.cbar2.set_clim(vmin2, vmax2)
+                self.contour1.set_clim(vmin1, vmax1)
+                self.contour2.set_clim(vmin2, vmax2)
 
-                # Refresh the colorbar
+                # Refresh the colorbar by updating its mappable object
                 self.cbar1.update_normal(self.contour1)
                 self.cbar2.update_normal(self.contour2)
 
@@ -197,6 +197,7 @@ class ContourAnimation:
                 continue
 
         return self.scatter_plots + [self.text]
+
 
 
 
