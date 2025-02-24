@@ -142,55 +142,62 @@ class ContourAnimation:
         else:
             return 1 - 0.2 * (frame - i)
 
-    def update(self, frame):
-        """Update function for animation."""
+def update(self, frame):
+    """Update function for animation."""
 
-        # Remove old scatter points
-        for sc in self.scatter_plots:
-            try:
-                sc.remove()
-            except:
-                continue
+    # Remove old scatter points
+    for sc in self.scatter_plots:
+        try:
+            sc.remove()
+        except:
+            continue
 
-        # Remove old contours before adding new ones
-        if hasattr(self, 'contour1'):
-            for c in self.contour1.collections:
-                c.remove()
-        if hasattr(self, 'contour2'):
-            for c in self.contour2.collections:
-                c.remove()
+    # Remove old contours before adding new ones
+    if hasattr(self, 'contour1'):
+        for c in self.contour1.collections:
+            c.remove()
+    if hasattr(self, 'contour2'):
+        for c in self.contour2.collections:
+            c.remove()
 
-        # Add new points for each batch
-        for i in range(frame + 1):
-            if self.z_list:
-                # Create new contour plots
-                self.contour1 = self.ax[0].contourf(self.teos_range, self.water_range, self.Z_ammonia[i], levels=20, cmap='viridis')
-                self.contour2 = self.ax[1].contourf(self.teos_range, self.ammonia_range, self.Z_water[i], levels=20, cmap='viridis')
+    # Add new points for each batch
+    for i in range(frame + 1):
+        if self.z_list:
+            # Create new contour plots
+            self.contour1 = self.ax[0].contourf(self.teos_range, self.water_range, self.Z_ammonia[i], levels=20, cmap='viridis')
+            self.contour2 = self.ax[1].contourf(self.teos_range, self.ammonia_range, self.Z_water[i], levels=20, cmap='viridis')
 
-                # Update existing colorbars instead of creating new ones
-                self.cbar1.update_normal(self.contour1)
-                self.cbar2.update_normal(self.contour2)
+            # Update the colorbar range dynamically
+            vmin1, vmax1 = np.min(self.Z_ammonia[i]), np.max(self.Z_ammonia[i])
+            vmin2, vmax2 = np.min(self.Z_water[i]), np.max(self.Z_water[i])
+            self.cbar1.set_clim(vmin1, vmax1)  # Update colorbar limits
+            self.cbar2.set_clim(vmin2, vmax2)
 
-            current_batch = self.batches_points[i]
-            self.text.set_text('Batch ' + self.batch_names[i])
-            alpha = self.get_alpha(i, frame)
-            color = 'red' if frame - i == 0 else 'k'
+            # Refresh the colorbar
+            self.cbar1.update_normal(self.contour1)
+            self.cbar2.update_normal(self.contour2)
 
-            for point in current_batch:
-                sc1 = self.ax[0].scatter(point[0], point[2], color=color, alpha=alpha)
-                sc2 = self.ax[1].scatter(point[0], point[1], color=color, alpha=alpha)
-                self.scatter_plots.append(sc1)
-                self.scatter_plots.append(sc2)
+        current_batch = self.batches_points[i]
+        self.text.set_text('Batch ' + self.batch_names[i])
+        alpha = self.get_alpha(i, frame)
+        color = 'red' if frame - i == 0 else 'k'
 
-            # Highlight best points in cyan
-            try:
-                bp = self.best_points[i]
-                self.ax[0].scatter(bp[0], bp[2], color='cyan', marker='*', s=100)
-                self.ax[1].scatter(bp[0], bp[1], color='cyan', marker='*', s=100)
-            except:
-                continue
+        for point in current_batch:
+            sc1 = self.ax[0].scatter(point[0], point[2], color=color, alpha=alpha)
+            sc2 = self.ax[1].scatter(point[0], point[1], color=color, alpha=alpha)
+            self.scatter_plots.append(sc1)
+            self.scatter_plots.append(sc2)
 
-        return self.scatter_plots + [self.text]
+        # Highlight best points in cyan
+        try:
+            bp = self.best_points[i]
+            self.ax[0].scatter(bp[0], bp[2], color='cyan', marker='*', s=100)
+            self.ax[1].scatter(bp[0], bp[1], color='cyan', marker='*', s=100)
+        except:
+            continue
+
+    return self.scatter_plots + [self.text]
+
 
 
     def run(self):
