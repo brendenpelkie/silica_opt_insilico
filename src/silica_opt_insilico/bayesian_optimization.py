@@ -92,11 +92,9 @@ def bayesian_optimize(x_train, y_train, batch_size, num_restarts, raw_samples, n
     elif acqf == 'qLogEI':
         acqfunc = qLogExpectedImprovement(
             model = model_nei,
-            best_f = y_train.max()[0],
-            X_baseline = x_train,
+            best_f = y_train.max(),
             sampler = qmc_sampler,
-            objective = objective,
-            prune_baseline = True
+            objective = objective
         )
     
     # optimize for new candidates
